@@ -1,0 +1,184 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #0a0a0a;
+  --fg: #f2f2ef;
+  --muted: #8f8f8a;
+  --line: rgba(242, 242, 239, 0.14);
+  --line-strong: rgba(242, 242, 239, 0.28);
+
+  /* Grid system, derived from the 1920px wireframe canvas
+     where the outer margin and gutter both read as 100px. */
+  --margin: clamp(20px, 5.2vw, 100px);
+  --gutter: clamp(12px, 1.6vw, 32px);
+
+
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --font-sans: var(--font-urw-din);
+  --font-bold: var(--font-urw-din-bold);
+  --font-display: var(--font-isocpeur);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  background: var(--bg);
+  color: var(--fg);
+}
+
+body {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* ---- Grid primitives ---- */
+
+.frame {
+  padding-inline: var(--margin);
+}
+
+.grid12 {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--gutter);
+}
+
+.hairline {
+  border-color: var(--line);
+}
+
+/* ---- Typography ---- */
+
+.eyebrow {
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.nav-label {
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.display {
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.05;
+}
+
+.body-copy {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.75;
+  letter-spacing: 0.005em;
+}
+
+/* ---- Image treatment: desaturated -> full colour on hover ----
+   Mirrors the "0% saturation / 50% opacity" -> "100% / 100%" rule
+   called out throughout the wireframes. */
+
+.kz-image {
+  filter: grayscale(1) brightness(0.8);
+  opacity: 0.55;
+  transition: filter 0.5s ease, opacity 0.5s ease, transform 0.6s ease;
+}
+
+.kz-image-hover:hover .kz-image,
+.kz-row-hover:hover .kz-image {
+  filter: grayscale(0) brightness(1);
+  opacity: 1;
+}
+
+.kz-image-active .kz-image {
+  filter: grayscale(0) brightness(1);
+  opacity: 1;
+}
+
+/* Scrollbar for the clipped info-copy box on project detail pages */
+.kz-scroll::-webkit-scrollbar {
+  width: 3px;
+}
+
+.kz-scroll::-webkit-scrollbar-thumb {
+  background: var(--line-strong);
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  .kz-image,
+  * {
+    transition-duration: 0.01ms !important;
+  }
+}
+.font-display{
+  font-family: var(--font-display);
+}
+
+.font-bold{
+  font-family: var(--font-bold);
+}
+
+.trim {
+  text-box-trim: trim-both;
+  text-box-edge: cap alphabetic;
+}
+
+/* ---- Staggered Scroll-Reveal Animation (mobile only) ---- */
+
+.gallery-container {
+  position: relative;
+  width: 100%;
+}
+
+.gallery-item {
+  position: relative;
+}
+
+.gallery-info {
+  transition: opacity 0.3s ease;
+}
+
+.gallery-info.is-hide {
+  opacity: 0;
+  pointer-events: none;
+}
+
+@media (max-width: 767px) {
+  .gallery-item {
+    will-change: transform;
+    transform: translateY(50vh);
+    opacity: 0;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+
+  .gallery-item.is-animated {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gallery-item {
+    animation: none !important;
+    transform: none !important;
+    opacity: 1 !important;
+  }
+}
