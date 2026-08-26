@@ -419,7 +419,7 @@ export default function ProjectDetailPage() {
       <section className="mx-auto px-0 lg:px-[120px]">
         <div className="grid grid-cols-12 gap-x-4 md:gap-x-6 lg:gap-x-8 gap-y-10">
           {/* Columns 1–4: credits, sticky while gallery/info scrolls */}
-          <div className={`col-span-12 lg:col-span-3 lg:sticky lg:top-32 lg:self-center ${infoOpen ? 'static px-6 py-8' : 'absolute top-26 lg:w-full w-[40%] left-6 lg:static'} lg:flex flex-col`}>
+          <div className={`col-span-12 lg:col-span-3 lg:sticky lg:top-32 lg:self-center ${infoOpen ? 'static pt-26 pb-0 px-6' : 'absolute top-26 lg:w-full w-[40%] left-6 lg:static'} lg:flex flex-col`}>
             <h1 className="text-[clamp(28px,3.4vw,44px)] font-bold leading-[1.05] mb-4">
               {project.name}
             </h1>
@@ -545,7 +545,7 @@ export default function ProjectDetailPage() {
                "+" corners mirror the ones used on the People page — same
                relative wrapper + four absolutely-positioned corner marks. */
             <div className="col-span-12 lg:col-start-5 lg:col-span-8 lg:h-screen lg:flex lg:flex-col lg:justify-between">
-              <div className="mt-[170px] lg:mt-[34px] flex flex-col items-center gap-4 shrink-0">
+              <div className="mt-0 lg:mt-[34px] flex flex-col items-center gap-4 shrink-0">
                 <button
                   type="button"
                   onClick={() => setInfoOpen(false)}
