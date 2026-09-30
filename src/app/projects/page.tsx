@@ -217,12 +217,12 @@ export default function ProjectsPage() {
 
       {/* ============ Mobile ============ */}
       <div className="lg:hidden pt-28 px-6 pb-16">
-        <div className="flex flex-wrap gap-3 mb-4">
+        <div className="flex flex-wrap gap-1 mb-4">
           {categories.map((c) => (
             <button
               key={c._id}
               onClick={() => selectCategory(c.slug)}
-              className={`text-[14px] rounded-sm px-3 py-0 whitespace-nowrap transition-colors ${
+              className={`text-[14px] rounded-sm px-2 py-0 whitespace-nowrap transition-colors ${
                 categorySlug === c.slug ? "bg-black text-white" : "text-black/70"
               }`}
             >
@@ -309,7 +309,7 @@ export default function ProjectsPage() {
                       gridRow: 1,
                     }}
                   >
-                    <span className="text-[22px] font-bold leading-tight">{p.name}</span>
+                    <span className="text-[20px] font-bold leading-tight">{p.name}</span>
                   </div>
                 </Link>
               );

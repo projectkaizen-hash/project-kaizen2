@@ -146,7 +146,7 @@ export default async function ContactPage() {
       {/* Mobile view */}
       <div className="lg:hidden absolute inset-0 top-20 overflow-y-auto p-16">
         {/* Location section first, framed by crosshairs like the desktop layout */}
-        <div className="relative py-20 px-18">
+        <div className="relative py-20 px-15">
           <div className="absolute top-0 left-0 -translate-x-1/2 -translate-y-1/2 text-4xl font-light font-fraunces">+</div>
           <div className="absolute top-0 right-0 translate-x-1/2 -translate-y-1/2 text-4xl font-light font-fraunces">+</div>
           <div className="absolute bottom-0 left-0 -translate-x-1/2 translate-y-1/2 text-4xl font-light font-fraunces">+</div>
