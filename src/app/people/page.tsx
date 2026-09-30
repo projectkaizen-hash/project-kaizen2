@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { getPeople, PersonWithUrls } from "@/lib/data";
@@ -63,7 +63,7 @@ export default function PeoplePage() {
         locked to the crosshair frame at any viewport width. */}
             <div className="grid grid-cols-8 gap-6">
               <div className="col-start-2 col-span-6 pt-6 pb-6">
-                <div className="grid grid-cols-3 gap-x-6 gap-y-10 content-start">
+                <div className="grid grid-cols-3 gap-x-6 gap-y-6 content-start">
                   {list.map((p) => (
                     <button
                       key={p.slug}
@@ -86,8 +86,8 @@ export default function PeoplePage() {
                           className="object-cover"
                         />
                       </div>
-                      <p className="mt-3 text-[15px] font-bold text-center">{p.name}</p>
-                      <p className="text-[14px] text-black/50 text-center">{p.title}</p>
+                      <p className="mt-3 text-[15px] font-bold text-center leading-tight">{p.name}</p>
+                      <p className="text-[14px] text-black text-center leading-tight">{p.title}</p>
                     </button>
                   ))}
                 </div>
@@ -101,8 +101,8 @@ export default function PeoplePage() {
         <div className={`absolute inset-0 ${FRAME_GRID} grid-rows-1 z-20 pointer-events-none`}>
           <div className="col-start-1 col-span-3 row-start-1 h-full pointer-events-auto overflow-y-auto [&::-webkit-scrollbar]:hidden flex flex-col justify-center">
             <h1 className="text-[28px] font-bold leading-tight">{active?.name}</h1>
-            <p className="text-[18px] text-black/60 mt-1">{active?.title}</p>
-            <p className="font-display text-[15px] leading-[1.6] mt-10 whitespace-pre-line">
+            <p className="text-[20px] text-black mt-1">{active?.title}</p>
+            <p className="font-display text-[15px] leading-[1.3] text-justify mt-10 whitespace-pre-line">
               {active?.bio ?? FALLBACK_BIO}
             </p>
           </div>
@@ -111,10 +111,10 @@ export default function PeoplePage() {
               layer above, so the "+" corners always sit exactly at the
               clip boundary defined by the shared pt-[8vh]/pb-[8vh]. */}
           <div className="col-start-5 col-span-8 row-start-1 relative h-full">
-            <div className="absolute top-0 left-0 -translate-x-1/2 -translate-y-1/2 text-2xl font-light text-black/40">+</div>
-            <div className="absolute top-0 right-0 translate-x-1/2 -translate-y-1/2 text-2xl font-light text-black/40">+</div>
-            <div className="absolute bottom-0 left-0 -translate-x-1/2 translate-y-1/2 text-2xl font-light text-black/40">+</div>
-            <div className="absolute bottom-0 right-0 translate-x-1/2 translate-y-1/2 text-2xl font-light text-black/40">+</div>
+            <div className="absolute top-0 left-0 -translate-x-1/2 -translate-y-1/2 text-4xl font-light font-fraunces">+</div>
+            <div className="absolute top-0 right-0 translate-x-1/2 -translate-y-1/2 text-4xl font-light font-fraunces">+</div>
+            <div className="absolute bottom-0 left-0 -translate-x-1/2 translate-y-1/2 text-4xl font-light font-fraunces">+</div>
+            <div className="absolute bottom-0 right-0 translate-x-1/2 translate-y-1/2 text-4xl font-light font-fraunces">+</div>
           </div>
         </div>
       </div>
@@ -128,12 +128,12 @@ export default function PeoplePage() {
           <>
             {/* Crosshair-framed detail view for the active person */}
             <div className="relative pb-10">
-              <div className="absolute top-0 left-0 -translate-x-1/2 -translate-y-1/2 text-xl font-light text-black/40">+</div>
-              <div className="absolute top-0 right-0 translate-x-1/2 -translate-y-1/2 text-xl font-light text-black/40">+</div>
-              <div className="absolute bottom-0 left-0 -translate-x-1/2 translate-y-1/2 text-xl font-light text-black/40">+</div>
-              <div className="absolute bottom-0 right-0 translate-x-1/2 translate-y-1/2 text-xl font-light text-black/40">+</div>
+              <div className="absolute top-0 left-0 -translate-x-1/2 -translate-y-1/2 text-4xl font-light font-fraunces">+</div>
+              <div className="absolute top-0 right-0 translate-x-1/2 -translate-y-1/2 text-4xl font-light font-fraunces">+</div>
+              <div className="absolute bottom-0 left-0 -translate-x-1/2 translate-y-1/2 text-4xl font-light font-fraunces">+</div>
+              <div className="absolute bottom-0 right-0 translate-x-1/2 translate-y-1/2 text-4xl font-light font-fraunces">+</div>
 
-              <div className="p-15 flex flex-col items-center text-center">
+              <div className="p-10 flex flex-col items-center text-center">
                 <div className="w-3/5 aspect-square relative mb-6">
                   <Image
                     src={active?.image || "/placeholder.jpg"}
@@ -145,18 +145,19 @@ export default function PeoplePage() {
                 </div>
                 <h1 className="text-[17px] font-bold leading-tight">{active?.name}</h1>
                 <p className="text-[15px] text-black/50 mb-8">{active?.title}</p>
-                <p className="font-display text-[14px] leading-[1.6] text-justify whitespace-pre-line">
+                <p className="font-display text-[14px] leading-[1.3] text-justify whitespace-pre-line">
                   {active?.bio ?? FALLBACK_BIO}
                 </p>
               </div>
             </div>
-
+            <div className="flex justify-center">
             <button
               onClick={() => setMobileView("list")}
               className="pt-10 block text-[15px] font-bold uppercase tracking-wide"
             >
-               Back to team
+               &#47;&#47; Back to team 
             </button>
+            </div>
           </>
         ) : (
           <div className="flex flex-col gap-12">

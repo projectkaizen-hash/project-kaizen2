@@ -1,6 +1,13 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
+import { Fraunces } from "next/font/google";
 import "./globals.css";
+
+const fraunces = Fraunces({
+  subsets: ["latin"],
+  variable: "--font-fraunces",
+  display: "swap",
+});
 
 const isocpeur = localFont({
   src: "../../public/fonts/isocpeur.ttf",
@@ -34,7 +41,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`h-full antialiased ${isocpeur.variable} ${urwDin.variable} ${urwDinBold.variable}`}
+      className={`h-full antialiased ${fraunces.variable} ${isocpeur.variable} ${urwDin.variable} ${urwDinBold.variable}`}
     >
       <body className="min-h-full flex flex-col bg-bg text-fg font-sans">
         {children}

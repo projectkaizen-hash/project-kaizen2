@@ -1,28 +1,18 @@
 @import "tailwindcss";
 
 :root {
-  --bg: #0a0a0a;
+  --bg: #fff;
   --fg: #f2f2ef;
   --muted: #8f8f8a;
-  --line: rgba(242, 242, 239, 0.14);
-  --line-strong: rgba(242, 242, 239, 0.28);
-
-  /* Grid system, derived from the 1920px wireframe canvas
-     where the outer margin and gutter both read as 100px. */
-  --margin: clamp(20px, 5.2vw, 100px);
-  --gutter: clamp(12px, 1.6vw, 32px);
-
-
 }
 
 @theme inline {
   --color-bg: var(--bg);
   --color-fg: var(--fg);
-  --color-muted: var(--muted);
-  --color-line: var(--line);
   --font-sans: var(--font-urw-din);
   --font-bold: var(--font-urw-din-bold);
   --font-display: var(--font-isocpeur);
+  --font-fraunces: var(--font-fraunces);
 }
 
 * {
@@ -47,22 +37,6 @@ a {
   text-decoration: none;
 }
 
-/* ---- Grid primitives ---- */
-
-.frame {
-  padding-inline: var(--margin);
-}
-
-.grid12 {
-  display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
-  column-gap: var(--gutter);
-}
-
-.hairline {
-  border-color: var(--line);
-}
-
 /* ---- Typography ---- */
 
 .eyebrow {
@@ -70,25 +44,6 @@ a {
   letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--muted);
-}
-
-.nav-label {
-  font-size: 11px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-}
-
-.display {
-  font-weight: 500;
-  letter-spacing: -0.01em;
-  line-height: 1.05;
-}
-
-.body-copy {
-  color: var(--muted);
-  font-size: 13px;
-  line-height: 1.75;
-  letter-spacing: 0.005em;
 }
 
 /* ---- Image treatment: desaturated -> full colour on hover ----
@@ -99,26 +54,6 @@ a {
   filter: grayscale(1) brightness(0.8);
   opacity: 0.55;
   transition: filter 0.5s ease, opacity 0.5s ease, transform 0.6s ease;
-}
-
-.kz-image-hover:hover .kz-image,
-.kz-row-hover:hover .kz-image {
-  filter: grayscale(0) brightness(1);
-  opacity: 1;
-}
-
-.kz-image-active .kz-image {
-  filter: grayscale(0) brightness(1);
-  opacity: 1;
-}
-
-/* Scrollbar for the clipped info-copy box on project detail pages */
-.kz-scroll::-webkit-scrollbar {
-  width: 3px;
-}
-
-.kz-scroll::-webkit-scrollbar-thumb {
-  background: var(--line-strong);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -136,49 +71,49 @@ a {
   font-family: var(--font-bold);
 }
 
+.font-fraunces{
+  font-family: var(--font-fraunces);
+}
+
 .trim {
   text-box-trim: trim-both;
   text-box-edge: cap alphabetic;
 }
 
-/* ---- Staggered Scroll-Reveal Animation (mobile only) ---- */
+/* ---- FS Lightbox: white theme ----
+   The library injects its stylesheet at runtime, so these need higher
+   specificity + !important to win. White backdrop; transparent button
+   squares with dark icons (default is dark squares with light icons). */
 
-.gallery-container {
-  position: relative;
-  width: 100%;
+div.fslightbox-container {
+  background: #ffffff !important;
 }
 
-.gallery-item {
-  position: relative;
+.fslightbox-toolbar .fslightboxb,
+.fslightbox-slide-btn-container .fslightboxb {
+  background: transparent !important;
 }
 
-.gallery-info {
-  transition: opacity 0.3s ease;
+.fslightbox-svg .fslightbox-svgp {
+  fill: #111111 !important;
 }
 
-.gallery-info.is-hide {
-  opacity: 0;
-  pointer-events: none;
+.fslightbox-toolbar .fslightboxb:hover .fslightbox-svgp,
+.fslightbox-toolbar .fslightboxb:focus .fslightbox-svgp,
+.fslightbox-slide-btn-container .fslightboxb:hover .fslightbox-svgp {
+  fill: #000000 !important;
 }
 
-@media (max-width: 767px) {
-  .gallery-item {
-    will-change: transform;
-    transform: translateY(50vh);
-    opacity: 0;
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
-  }
-
-  .gallery-item.is-animated {
-    opacity: 1;
-  }
+/* Slide counter ("4 / 5"): dark text and a black divider line (defaults
+   are light grey text with a white rotated line, invisible on white). */
+.fslightbox-sn-container .fslightboxsn,
+div.fslightbox-container span.fslightboxsn {
+  background: #111111 !important;
 }
-
-@media (prefers-reduced-motion: reduce) {
-  .gallery-item {
-    animation: none !important;
-    transform: none !important;
-    opacity: 1 !important;
-  }
+.fslightboxsn span{
+  color: #111111 !important;
+}
+.fslightbox-sn-container .fslightboxsl,
+div.fslightbox-container .fslightboxsl {
+  background: #111111 !important;
 }

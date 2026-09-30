@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import ProjectSearch from "@/components/ProjectSearch";
 
 const Logo = ({ className }: { className?: string }) => (
   <svg
@@ -29,7 +30,13 @@ const Logo = ({ className }: { className?: string }) => (
   </svg>
 );
 
-export default function Nav({ dark = false }: { dark?: boolean }) {
+export default function Nav({
+  dark = false,
+  fixed = false,
+}: {
+  dark?: boolean;
+  fixed?: boolean;
+}) {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -58,16 +65,20 @@ export default function Nav({ dark = false }: { dark?: boolean }) {
     };
   }, [menuOpen]);
 
-  // `dark` swaps the header's text/logo/divider color for use on dark
-  // backgrounds (e.g. project pages with a dark hero image behind the
-  // nav). Every color below reads from this one flag instead of being
-  // hardcoded, so it's a single source of truth.
+  // `dark` swaps the header's text/logo color for use on dark
+  // backgrounds. Every color below reads from this one flag instead of
+  // being hardcoded, so it's a single source of truth.
   const textColor = dark ? "text-white" : "text-black";
-  const dividerColor = dark ? "border-white/15" : "border-black/15";
   const hamburgerColor = dark ? "bg-white" : "bg-[#231F20]";
 
+  // `fixed` pins the header to the top of the viewport (with an opaque white
+  // background so page content scrolling beneath it is hidden) instead of
+  // scrolling away with the rest of the document. Pages that scroll normally
+  // use this so the header stays put while the full page scrolls.
+  const position = fixed ? "fixed top-0 inset-x-0 z-50 bg-white" : "relative";
+
   return (
-    <header className={`w-full relative ${textColor}`}>
+    <header className={`w-full ${position} ${textColor}`}>
       <div className="hidden lg:grid grid-cols-12 gap-6 px-[120px] h-[84px] items-center">
         <Link
           href="/"
@@ -85,14 +96,17 @@ export default function Nav({ dark = false }: { dark?: boolean }) {
           </span>
         </Link>
 
-        <Link
-          href="/projects"
-          className="col-start-10 col-span-1 flex justify-end"
-        >
-          <span className={`${pathname === "/projects" ? "bg-black text-white" : ""} text-[15px] font-medium uppercase px-3 py-1.5 rounded-sm trim translate-x-[12px]`}>
-            PROJECTS
-          </span>
-        </Link>
+        <div className="col-start-10 col-span-1 flex justify-end items-center gap-3">
+          <ProjectSearch />
+          <Link
+            href="/projects"
+            className="flex justify-end"
+          >
+            <span className={`${pathname === "/projects" ? "bg-black text-white" : ""} text-[15px] font-medium uppercase px-3 py-1.5 rounded-sm trim translate-x-[12px]`}>
+              PROJECTS
+            </span>
+          </Link>
+        </div>
 
         <Link
           href="/people"
@@ -125,28 +139,20 @@ export default function Nav({ dark = false }: { dark?: boolean }) {
             aria-label={menuOpen ? "Close menu" : "Open menu"}
             aria-expanded={menuOpen}
             onClick={() => setMenuOpen((prev) => !prev)}
-            className="relative w-7 h-6 flex flex-col justify-between shrink-0"
+            className="relative w-7 h-[24px] flex items-center justify-center shrink-0"
           >
             <span
-              className={`block h-[1.5px] w-full transition-transform duration-300 ease-in-out ${hamburgerColor} ${
-                menuOpen ? "translate-y-[11px] rotate-45" : ""
+              className={`absolute h-[1.5px] w-full transition-transform duration-300 ease-in-out ${hamburgerColor} ${
+                menuOpen ? "rotate-45" : "-translate-y-[6px]"
               }`}
             />
             <span
-              className={`block h-[1.5px] w-full transition-opacity duration-200 ease-in-out ${hamburgerColor} ${
-                menuOpen ? "opacity-0" : "opacity-100"
-              }`}
-            />
-            <span
-              className={`block h-[1.5px] w-full transition-transform duration-300 ease-in-out ${hamburgerColor} ${
-                menuOpen ? "-translate-y-[11px] -rotate-45" : ""
+              className={`absolute h-[1.5px] w-full transition-transform duration-300 ease-in-out ${hamburgerColor} ${
+                menuOpen ? "-rotate-45" : "translate-y-[6px]"
               }`}
             />
           </button>
         </div>
-
-        {/* Divider under the header — stays visible whether menu is open or closed */}
-        <div className={`border-b ${dividerColor}`} />
 
         {/* Fullscreen mobile menu overlay — sits BELOW the header, not over it */}
         <div
@@ -155,7 +161,14 @@ export default function Nav({ dark = false }: { dark?: boolean }) {
           }`}
         >
           <nav className="h-full flex flex-col justify-between px-6 py-0">
-            <div></div>
+            {/* Inline search bar sits at the very top of the menu, before
+                CONTACT — the menu overlay is the search's own overlay, so
+                the inline variant renders bar + live results in place and
+                leaves body scroll-locking to the menu. */}
+            <div className="pt-6">
+              <ProjectSearch variant="inline" />
+            </div>
+
             <div className="">
               <Link
                 href="/contact"
@@ -193,7 +206,7 @@ export default function Nav({ dark = false }: { dark?: boolean }) {
         </div>
       </div>
 
-      <div className="mx-auto w-[calc(100%-240px)] border-b border-black/15" />
+      <div className="mx-auto w-[calc(100%-48px)] md:w-[calc(100%-240px)] border-b border-black" />
     </header>
   );
 }

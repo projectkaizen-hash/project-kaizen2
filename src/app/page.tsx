@@ -1,19 +1,25 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { getProjects, ProjectWithUrls } from "@/lib/data";
+import { getProjects, getHomepage, ProjectWithUrls } from "@/lib/data";
 import Nav from "@/components/Nav3";
+import ProjectSearch from "@/components/ProjectSearch";
 
 export default function Home() {
   const [projects, setProjects] = useState<ProjectWithUrls[]>([]);
+  const [introText, setIntroText] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     getProjects().then((data) => {
       setProjects(data);
       setLoading(false);
+    });
+    getHomepage().then((hp) => {
+      if (hp?.featuredProjects?.length) setProjects(hp.featuredProjects);
+      if (hp?.introText) setIntroText(hp.introText);
     });
   }, []);
 
@@ -114,10 +120,18 @@ export default function Home() {
                 href={`/projects/${p.slug}`}
                 data-index={i}
                 ref={(el) => { itemRefsMobile.current[i] = el; }}
-                className="block w-full aspect-square mb-4 snap-center transition-all duration-300 ease-out relative"
+                className="block w-full aspect-square mb-4 snap-center relative"
                 style={{
                   filter: activeIndex === i ? "saturate(1)" : "saturate(0)",
-                  opacity: activeIndex === i ? 1 : 0.5
+                  opacity: activeIndex === i ? 1 : 0.5,
+                  // Color ON is instant: `transition: none` while active, so
+                  // the center image is full-color the moment it reaches the
+                  // frame even during fast scrolls (no 300ms grey lag). Only
+                  // the fade-OUT eases, so neighbours dim smoothly.
+                  transition:
+                    activeIndex === i
+                      ? "none"
+                      : "filter 400ms ease, opacity 400ms ease",
                 }}
               >
                 <div className="relative w-full h-full">
@@ -137,10 +151,10 @@ export default function Home() {
 
           {/* Mobile Crosshair Frame */}
           <div className="absolute left-[60px] right-[60px] top-[calc(50svh+40px)] -translate-y-1/2 h-[30vh] pointer-events-none">
-            <div className="absolute top-0 left-0 -translate-x-1/2 -translate-y-1/2 text-2xl font-light text-black/40">+</div>
-            <div className="absolute bottom-0 left-0 -translate-x-1/2 translate-y-1/2 text-2xl font-light text-black/40">+</div>
-            <div className="absolute top-0 right-0 translate-x-1/2 -translate-y-1/2 text-2xl font-light text-black/40">+</div>
-            <div className="absolute bottom-0 right-0 translate-x-1/2 translate-y-1/2 text-2xl font-light text-black/40">+</div>
+            <div className="absolute top-0 left-0 -translate-x-1/2 -translate-y-1/2 text-4xl font-light font-fraunces">+</div>
+            <div className="absolute bottom-0 left-0 -translate-x-1/2 translate-y-1/2 text-4xl font-light font-fraunces">+</div>
+            <div className="absolute top-0 right-0 translate-x-1/2 -translate-y-1/2 text-4xl font-light font-fraunces">+</div>
+            <div className="absolute bottom-0 right-0 translate-x-1/2 translate-y-1/2 text-4xl font-light font-fraunces">+</div>
           </div>
         </div>
       </div>
@@ -183,7 +197,7 @@ export default function Home() {
               href={`/projects/${p.slug}`}
               data-index={i}
               ref={(el) => { itemRefsDesktop.current[i] = el; }}
-              className="block aspect-square mx-auto mb-1 snap-center transition-all duration-300 ease-out relative"
+              className="block aspect-square mx-auto mb-1 snap-center relative"
               style={{
                 // Frame (this container) = col-span-4 = 4 columns + 3 gutters.
                 // Wireframe shows the photo inset by exactly one column width
@@ -192,7 +206,14 @@ export default function Home() {
                 // 50% + 1.5*gutter. Gutter is gap-6 = 24px, so 1.5*24 = 36px.
                 width: "calc(50% + 36px)",
                 filter: activeIndex === i ? "saturate(1)" : "saturate(0)",
-                opacity: activeIndex === i ? 1 : 0.5
+                opacity: activeIndex === i ? 1 : 0.5,
+                // Same instant-on / eased-off rule as mobile (see above):
+                // activation snaps to full color immediately; only the
+                // deactivation fades, over 400ms.
+                transition:
+                  activeIndex === i
+                    ? "none"
+                    : "filter 400ms ease, opacity 400ms ease",
               }}
             >
               <div className="relative w-full h-full">
@@ -216,12 +237,9 @@ export default function Home() {
 
         {/* Top Left Text (Spans cols 1-3 exactly per wireframe) */}
         <div className="col-start-1 col-span-3 row-start-1 pt-[5vh]">
-          <p className="font-display text-black pointer-events-auto text-[18px] leading-[1.3]">
-            Lorem ipsum dolor sit amet,
-            consectetuer adipiscing elit, sed diam
-            nonummy nibh euismod tincidunt ut
-            laoreet dolore magna aliquam erat
-            volutpat. Ut wisi enim ad minim veniam,
+          <p className="font-display text-black pointer-events-auto text-[18px] leading-[1.3] whitespace-pre-line">
+            {introText ??
+              "Lorem ipsum dolor sit amet,\nconsectetuer adipiscing elit, sed diam\nnonummy nibh euismod tincidunt ut\nlaoreet dolore magna aliquam erat\nvolutpat. Ut wisi enim ad minim veniam,"}
           </p>
         </div>
 
@@ -248,10 +266,10 @@ export default function Home() {
 
 
         <div className="col-start-5 col-span-4 row-start-1 relative mt-[30vh] h-[40vh]">
-          <div className="absolute top-0 left-0 -translate-x-1/2 -translate-y-1/2 text-2xl font-light text-black/40">+</div>
-          <div className="absolute bottom-0 left-0 -translate-x-1/2 translate-y-1/2 text-2xl font-light text-black/40">+</div>
-          <div className="absolute top-0 right-0 translate-x-1/2 -translate-y-1/2 text-2xl font-light text-black/40">+</div>
-          <div className="absolute bottom-0 right-0 translate-x-1/2 translate-y-1/2 text-2xl font-light text-black/40">+</div>
+          <div className="absolute top-0 left-0 -translate-x-1/2 -translate-y-1/2 text-4xl font-light font-fraunces">+</div>
+          <div className="absolute bottom-0 left-0 -translate-x-1/2 translate-y-1/2 text-4xl font-light font-fraunces">+</div>
+          <div className="absolute top-0 right-0 translate-x-1/2 -translate-y-1/2 text-4xl font-light font-fraunces">+</div>
+          <div className="absolute bottom-0 right-0 translate-x-1/2 translate-y-1/2 text-4xl font-light font-fraunces">+</div>
         </div>
 
         {/* Right Navigation Links (Cols 10, 11, 12 exactly per wireframe) */}
@@ -268,9 +286,13 @@ export default function Home() {
         </div>
 
         <div className="col-start-12 col-span-1 row-start-1 flex flex-col justify-center h-full relative">
+           <div className="absolute top-[5vh] right-0 pointer-events-auto cursor-pointer">
+            <ProjectSearch iconClassName="" />
+          </div>
           <Link href="/process" className="text-[15px] font-medium uppercase pointer-events-auto hover:opacity-50 transition-opacity text-end pb-[33.6px]">
             PROCESS
           </Link>
+
           <Link href="/contact" className="absolute bottom-[5vh] right-0 text-[15px] font-medium uppercase pointer-events-auto hover:opacity-50 transition-opacity">
             CONTACT
           </Link>

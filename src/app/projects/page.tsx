@@ -1,106 +1,161 @@
 "use client";
 
-import { useMemo, useRef, useState, useEffect } from "react";
+import { useMemo, useState, useEffect } from "react";
 import Link from "next/link";
 import Nav from "@/components/Nav";
 import Image from "next/image";
-import { getProjects, ProjectCategory, ProjectType, ProjectWithUrls } from "@/lib/data";
+import { getProjects, getCategories, getSubcategories, ProjectWithUrls, Category, Subcategory } from "@/lib/data";
 
-const types: { key: ProjectType | "all"; label: string }[] = [
-  { key: "all", label: "/all" },
-  { key: "competition", label: "/competition" },
-  { key: "building", label: "/building" },
-  { key: "interior", label: "/interior" },
-];
+// Desktop tab placement for the original three-column layout. The first tab
+// sits after column 1, the last hugs column 10; when there are exactly three
+// tabs the middle one centers.
+function tabPlacement(index: number, total: number): string {
+  if (index === 0) return "lg:col-start-2";
+  if (index === total - 1) return "lg:col-start-10";
+  if (total === 3 && index === 1) return "absolute left-1/2 -translate-x-1/2";
+  return "";
+}
 
-const categories: { key: ProjectCategory; label: string; colStart?: string; isCenter?: boolean }[] = [
-  { key: "architecture", label: "architecture", colStart: "lg:col-start-2" },
-  { key: "graphic design", label: "graphic design", isCenter: true },
-  { key: "speculatives", label: "speculatives", colStart: "lg:col-start-10" },
-];
+
 
 const TOTAL_SLOTS = 6; // 12 columns / 2 per image
 const GAP_SLOTS = 2; // slot-widths reserved as empty space for the title
 const CYCLE = TOTAL_SLOTS - GAP_SLOTS; // 4 distinct positions the title/gap can take
 
 // Mobile mirrors the desktop staggered logic, scaled to a 4-column grid:
-// 2 slots for the title, 1 active (full-opacity) image, 1 faded image.
+// 2 slots for the title, the rest images. The title cycles through all three
+// positions it can occupy — including LEADING the row (text first, images
+// after) — so rows alternate: text|imgs, img|text|img, imgs|text.
 const MOBILE_TOTAL_SLOTS = 4;
 const MOBILE_GAP_SLOTS = 2;
-const MOBILE_CYCLE = MOBILE_TOTAL_SLOTS - MOBILE_GAP_SLOTS; // 2 distinct positions
+const MOBILE_TITLE_POSITIONS = MOBILE_TOTAL_SLOTS - MOBILE_GAP_SLOTS + 1; // 3 positions
+
+const ALL_SUBCATS = "__all__";
 
 export default function ProjectsPage() {
-  const [type, setType] = useState<ProjectType | "all">("all");
-  const [category, setCategory] = useState<ProjectCategory>("architecture");
+  const [categorySlug, setCategorySlug] = useState<string>("");
+  const [subcategorySlug, setSubcategorySlug] = useState<string>(ALL_SUBCATS);
   const [projects, setProjects] = useState<ProjectWithUrls[]>([]);
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
+
+  // Switching category resets the sub-category filter — sub-categories are
+  // scoped to their parent category.
+  const selectCategory = (slug: string) => {
+    setCategorySlug(slug);
+    setSubcategorySlug(ALL_SUBCATS);
+  };
 
   useEffect(() => {
     getProjects().then(setProjects);
+    getCategories().then((cmsCategories) => {
+      setCategories(cmsCategories);
+      if (cmsCategories.length > 0) {
+        setCategorySlug(cmsCategories[0].slug);
+      }
+    });
+    getSubcategories().then(setSubcategories);
   }, []);
+
+
 
   const filtered = useMemo(
     () =>
       projects.filter(
-        (p: ProjectWithUrls) => (type === "all" || p.type === type) && p.category === category
+        (p: ProjectWithUrls) =>
+          p.categorySlug === categorySlug &&
+          (subcategorySlug === ALL_SUBCATS || p.subcategorySlugs.includes(subcategorySlug))
       ),
-    [type, category, projects]
+    [categorySlug, subcategorySlug, projects]
   );
 
-  const scrollByAmount = (dir: 1 | -1) =>
-    scrollRef.current?.scrollBy({ top: dir * 360, behavior: "smooth" });
+  // Sub-categories of the currently selected category, if any exist.
+  const subcatsForCategory = useMemo(
+    () => subcategories.filter((s) => s.parentCategorySlug === categorySlug),
+    [subcategories, categorySlug]
+  );
+
+  // Don't render content until categories are loaded
+  if (categories.length === 0) {
+    return (
+      <main className="relative min-h-[100svh] w-full bg-white text-black font-sans">
+        <Nav fixed />
+        <div className="flex items-center justify-center h-[100svh]">
+          <p className="text-[14px] text-black/50">Loading categories...</p>
+        </div>
+      </main>
+    );
+  }
 
   return (
-    <main className="relative h-[100svh] w-full bg-white text-black font-sans overflow-hidden">
-      <Nav />
+    // Full-page scroll: the header is fixed and the filter row sticks beneath
+    // it, while the whole document scrolls — no more inner scroller.
+    <main className="relative min-h-[100svh] w-full bg-white text-black font-sans">
+      <Nav fixed />
 
       {/* ============ Desktop ============ */}
-      <div className="hidden lg:block absolute inset-0 top-[84px]">
-        {/* Category tabs + filter row */}
-        <div className="grid grid-cols-12 gap-6 px-[120px] pt-[8vh] pb-8">
-          {categories.map((c) => (
-            <div
-              key={c.key}
-              className={`col-span-3 flex flex-col items-start ${
-                c.isCenter ? "absolute left-1/2 -translate-x-1/2" : c.colStart
-              }`}
-            >
-              <button
-                onClick={() => setCategory(c.key)}
-                className={`text-[14px] rounded-sm trim ${
-                  c.isCenter ? "" : "translate-x-[-12px]"
-                } px-3 py-1.5 transition-colors whitespace-nowrap ${
-                  category === c.key ? "bg-black text-white" : "text-black/70 hover:text-black"
-                }`}
+      <div className="hidden lg:block pt-[84px]">
+        {/* Category tabs + sub-category filters — sticks under the fixed
+            header while the project list scrolls underneath. */}
+        <div className="bg-white grid grid-cols-12 gap-6 px-[120px] pt-[8vh] pb-8">
+          {categories.map((c, i) => {
+            const placement = tabPlacement(i, categories.length);
+            return (
+              <div
+                key={c._id}
+                className={`col-span-3 flex flex-col items-start ${placement}`}
               >
-                {c.label}
-              </button>
-            </div>
-          ))}
-
-          {/* Type filters - always under first category */}
-          <div className="col-start-2 col-span-3 flex flex-col items-start">
-            <div className="flex items-center gap-6 text-[14px]">
-              {types.map((t) => (
                 <button
-                  key={t.key}
-                  onClick={() => setType(t.key)}
-                  className={`whitespace-nowrap transition-opacity ${
-                    type === t.key ? "underline underline-offset-4" : "opacity-60 hover:opacity-100"
+                  onClick={() => selectCategory(c.slug)}
+                  className={`text-[14px] rounded-sm trim ${
+                    placement.startsWith("absolute") ? "" : "translate-x-[-12px]"
+                  } px-3 py-1.5 transition-colors whitespace-nowrap ${
+                    categorySlug === c.slug
+                      ? "bg-black text-white"
+                      : "text-black/70 hover:text-black"
                   }`}
                 >
-                  {t.label}
+                  {c.name}
+                </button>
+              </div>
+            );
+          })}
+
+          {/* Sub-category filters — the primary filter (replaces the old
+              hardcoded type row). Renders when the active category has
+              sub-categories in the CMS; "/all" resets. Labels keep the
+              "/name" style of the old type row. */}
+          {subcatsForCategory.length > 0 && (
+            <div className="col-start-2 col-span-6 flex flex-wrap items-center gap-6 text-[14px]">
+              <button
+                onClick={() => setSubcategorySlug(ALL_SUBCATS)}
+                className={`whitespace-nowrap transition-opacity ${
+                  subcategorySlug === ALL_SUBCATS
+                    ? "underline underline-offset-4"
+                    : "opacity-50 hover:opacity-100"
+                }`}
+              >
+                /all
+              </button>
+              {subcatsForCategory.map((s) => (
+                <button
+                  key={s._id}
+                  onClick={() => setSubcategorySlug(s.slug)}
+                  className={`whitespace-nowrap transition-opacity ${
+                    subcategorySlug === s.slug
+                      ? "underline underline-offset-4"
+                      : "opacity-50 hover:opacity-100"
+                  }`}
+                >
+                  /{s.name}
                 </button>
               ))}
             </div>
-          </div>
+          )}
         </div>
 
-        {/* Staggered project rows */}
-        <div
-          ref={scrollRef}
-          className="absolute inset-x-0 bottom-0 top-[220px] overflow-y-auto [&::-webkit-scrollbar]:hidden px-[120px] pb-[8vh]"
-        >
+        {/* Staggered project rows — scroll with the document now. */}
+        <div className="px-[120px] pb-[8vh]">
           {filtered.length === 0 ? (
             <p className="text-[14px] text-black/50 py-20">No projects in this filter yet.</p>
           ) : (
@@ -148,7 +203,7 @@ export default function ProjectsPage() {
                     className="font-bold"
                     style={{ gridColumn: `${titleColStart} / span ${titleColSpan}`, gridRow: 1 }}
                   >
-                    <span className="text-[36px]">
+                    <span className="text-[36px] leading-tight"> 
                       {p.name}
                     </span>
                   </div>
@@ -156,73 +211,78 @@ export default function ProjectsPage() {
               );
             })
           )}
-
-          <p className="text-[13px] text-black/40 text-center pt-16 pb-10">
-            The Projects could go on&hellip;
-          </p>
         </div>
 
-        {/* Scroll controls */}
-        <div className="absolute right-10 top-1/2 -translate-y-1/2 flex flex-col items-center gap-6 z-30">
-          <button aria-label="Scroll up" onClick={() => scrollByAmount(-1)} className="hover:opacity-60 transition-opacity">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-              <path d="M12 19V5M5 12l7-7 7 7" />
-            </svg>
-          </button>
-          <button aria-label="Scroll down" onClick={() => scrollByAmount(1)} className="hover:opacity-60 transition-opacity">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-              <path d="M12 5v14M5 12l7 7 7-7" />
-            </svg>
-          </button>
-        </div>
       </div>
 
       {/* ============ Mobile ============ */}
-      <div className="lg:hidden absolute inset-0 top-20 overflow-y-auto px-6 pt-8 pb-16">
+      <div className="lg:hidden pt-28 px-6 pb-16">
         <div className="flex flex-wrap gap-3 mb-4">
           {categories.map((c) => (
             <button
-              key={c.key}
-              onClick={() => setCategory(c.key)}
-              className={`text-[15px] rounded-sm px-3 py-1.5 whitespace-nowrap transition-colors ${
-                category === c.key ? "bg-black text-white" : "text-black/70"
+              key={c._id}
+              onClick={() => selectCategory(c.slug)}
+              className={`text-[14px] rounded-sm px-3 py-0 whitespace-nowrap transition-colors ${
+                categorySlug === c.slug ? "bg-black text-white" : "text-black/70"
               }`}
             >
-              {c.label}
+              {c.name}
             </button>
           ))}
         </div>
 
-        <div className="flex flex-wrap gap-6 mb-10 text-[15px]">
-          {types.map((t) => (
+        {/* Sub-category filter row (mobile) — same "/name + underline"
+            styling as desktop. Hidden when the category has no
+            sub-categories. */}
+        {subcatsForCategory.length > 0 && (
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 mb-4 text-[14px]">
             <button
-              key={t.key}
-              onClick={() => setType(t.key)}
-              className={type === t.key ? "underline underline-offset-4" : "opacity-60"}
+              onClick={() => setSubcategorySlug(ALL_SUBCATS)}
+              className={`whitespace-nowrap transition-opacity ${
+                subcategorySlug === ALL_SUBCATS
+                  ? "underline underline-offset-4"
+                  : "opacity-50 hover:opacity-100"
+              }`}
             >
-              {t.label}
+              /all
             </button>
-          ))}
-        </div>
+            {subcatsForCategory.map((s) => (
+              <button
+                key={s._id}
+                onClick={() => setSubcategorySlug(s.slug)}
+                className={`whitespace-nowrap transition-opacity ${
+                  subcategorySlug === s.slug
+                    ? "underline underline-offset-4"
+                    : "opacity-50 hover:opacity-100"
+                }`}
+              >
+                /{s.name}
+              </button>
+            ))}
+          </div>
+        )}
 
         {filtered.length === 0 ? (
           <p className="text-[14px] text-black/50 py-10">No projects in this filter yet.</p>
         ) : (
           <div className="flex flex-col">
             {filtered.map((p: ProjectWithUrls, i: number) => {
-              // Mirrors the desktop staggered logic, scaled to a 4-column grid:
-              // 2 slots for the title, 1 active (full-opacity) image, 1 faded image.
-              const activeSlot = i % MOBILE_CYCLE;
-              const gapStart = activeSlot + 1; // slot swallowed by the title
+              // Title cycles through its three possible positions: leading the
+              // row (text first, images follow), middle, and end.
+              const titleStart = i % MOBILE_TITLE_POSITIONS;
+              // Bright image sits just left of the title; when the text leads
+              // the row, the first image after it is the bright one.
+              const activeSlot = titleStart === 0 ? MOBILE_GAP_SLOTS : titleStart - 1;
 
               return (
                 <Link
                   key={p.slug}
                   href={`/projects/${p.slug}`}
-                  className="group relative grid grid-cols-4 gap-3 py-10 items-center"
+                  className="group relative grid grid-cols-4 gap-3 py-10 items-start"
                 >
                   {Array.from({ length: MOBILE_TOTAL_SLOTS }).map((_, slot) => {
-                    if (slot >= gapStart && slot < gapStart + MOBILE_GAP_SLOTS) return null;
+                    // Slots inside the title's space aren't rendered at all.
+                    if (slot >= titleStart && slot < titleStart + MOBILE_GAP_SLOTS) return null;
                     return (
                       <div
                         key={slot}
@@ -244,9 +304,12 @@ export default function ProjectsPage() {
 
                   <div
                     className="font-extrabold"
-                    style={{ gridColumn: `${gapStart + 1} / span ${MOBILE_GAP_SLOTS}`, gridRow: 1 }}
+                    style={{
+                      gridColumn: `${titleStart + 1} / span ${MOBILE_GAP_SLOTS}`,
+                      gridRow: 1,
+                    }}
                   >
-                    <span className="text-[28px] leading-tight">{p.name}</span>
+                    <span className="text-[22px] font-bold leading-tight">{p.name}</span>
                   </div>
                 </Link>
               );

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import ProjectSearch from "@/components/ProjectSearch";
 
 const Logo = ({ className }: { className?: string }) => (
   <svg
@@ -82,37 +83,37 @@ export default function Nav({ dark = false }: { dark?: boolean }) {
             aria-label={menuOpen ? "Close menu" : "Open menu"}
             aria-expanded={menuOpen}
             onClick={() => setMenuOpen((prev) => !prev)}
-            className="relative w-7 h-6 flex flex-col justify-between shrink-0"
+            className="relative w-7 h-[24px] flex items-center justify-center shrink-0"
           >
             <span
-              className={`block h-[1.5px] w-full transition-transform duration-300 ease-in-out ${hamburgerColor} ${
-                menuOpen ? "translate-y-[11px] rotate-45" : ""
+              className={`absolute h-[1.5px] w-full transition-transform duration-300 ease-in-out ${hamburgerColor} ${
+                menuOpen ? "rotate-45" : "-translate-y-[6px]"
               }`}
             />
             <span
-              className={`block h-[1.5px] w-full transition-opacity duration-200 ease-in-out ${hamburgerColor} ${
-                menuOpen ? "opacity-0" : "opacity-100"
-              }`}
-            />
-            <span
-              className={`block h-[1.5px] w-full transition-transform duration-300 ease-in-out ${hamburgerColor} ${
-                menuOpen ? "-translate-y-[11px] -rotate-45" : ""
+              className={`absolute h-[1.5px] w-full transition-transform duration-300 ease-in-out ${hamburgerColor} ${
+                menuOpen ? "-rotate-45" : "translate-y-[6px]"
               }`}
             />
           </button>
         </div>
 
         {/* Divider under the header — stays visible whether menu is open or closed */}
-        <div className={`border-b ${dividerColor}`} />
 
         {/* Fullscreen mobile menu overlay — sits BELOW the header, not over it */}
         <div
           className={`fixed inset-x-0 top-20 bottom-0 z-40 bg-white transition-opacity duration-300 ease-in-out ${
             menuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
           }`}
-        >
-          <nav className="h-full flex flex-col justify-between px-6 py-0">
-            <div></div>
+        >          <nav className="h-full flex flex-col justify-between px-6 py-0">
+            {/* Inline search bar sits at the very top of the menu, before
+                CONTACT — the menu overlay is the search's own overlay, so
+                the inline variant renders bar + live results in place and
+                leaves body scroll-locking to the menu. */}
+            <div className="pt-6">
+              <ProjectSearch variant="inline" />
+            </div>
+
             <div className="">
               <Link
                 href="/contact"
@@ -150,7 +151,7 @@ export default function Nav({ dark = false }: { dark?: boolean }) {
         </div>
       </div>
 
-      <div className="mx-auto w-[calc(100%-240px)] border-b border-black/15" />
+      <div className="mx-auto block md:hidden w-[calc(100%-48px)] md:w-[calc(100%-240px)] border-b border-black" />
     </header>
   );
 }
