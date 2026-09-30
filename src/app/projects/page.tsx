@@ -222,7 +222,7 @@ export default function ProjectsPage() {
             <button
               key={c._id}
               onClick={() => selectCategory(c.slug)}
-              className={`text-[14px] rounded-sm px-2 py-0 whitespace-nowrap transition-colors ${
+              className={`text-[14px] rounded-sm px-1 py-0 whitespace-nowrap transition-colors ${
                 categorySlug === c.slug ? "bg-black text-white" : "text-black/70"
               }`}
             >
@@ -316,10 +316,6 @@ export default function ProjectsPage() {
             })}
           </div>
         )}
-
-        <p className="text-[12px] text-black/40 text-center pt-10 pb-6">
-          The Projects could go on&hellip;
-        </p>
       </div>
     </main>
   );
